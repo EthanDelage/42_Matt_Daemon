@@ -55,6 +55,8 @@ int Daemon::start(const char *daemon_user) {
     return -1;
   }
 
+  dprintf(pidfd, "%d\n", getpid());
+
   if (setgid(gid) < 0) {
     TintinReporter::get_instance().error(std::string("start: setgid: ") +
                                  strerror(errno));
@@ -132,8 +134,6 @@ int Daemon::create_lockfile(uid_t uid, gid_t gid) {
     close(fd);
     return -1;
   }
-
-  dprintf(fd, "%d\n", getpid());
 
   if (fchown(fd, uid, gid) < 0) {
     TintinReporter::get_instance().error(std::string("create_lockfile: fchown: ") +
