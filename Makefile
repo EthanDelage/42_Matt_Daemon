@@ -1,4 +1,4 @@
-NAME        	:= taskmaster
+NAME        	:= mattdaemon
 BUILD_DIR   	:= .build
 
 .PHONY: all
