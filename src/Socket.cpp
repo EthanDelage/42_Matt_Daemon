@@ -5,11 +5,9 @@
 
 Socket::Socket() : _fd(-1) {}
 
-Socket::Socket(const int fd) : _fd(fd) {
-}
+Socket::Socket(const int fd) : _fd(fd) {}
 
-Socket::Socket(const Socket & other) : _fd(other._fd) {
-}
+Socket::Socket(const Socket &other) : _fd(other._fd) {}
 
 Socket::~Socket() {
   if (_fd != -1) {
@@ -18,7 +16,7 @@ Socket::~Socket() {
   _fd = -1;
 }
 
-Socket & Socket::operator=(const Socket & other) {
+Socket &Socket::operator=(const Socket &other) {
   if (this == &other) {
     return *this;
   }

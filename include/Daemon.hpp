@@ -4,23 +4,23 @@
 #include <sys/types.h>
 
 #define DAEMON_LOCKFILE "/var/lock/matt_daemon.lock"
-#define DAEMON_USER
+#define DAEMON_USER "daemon"
 
 class Daemon {
 public:
-    Daemon();
-    Daemon(const Daemon &);
-    ~Daemon();
+  Daemon();
+  Daemon(const Daemon &);
+  ~Daemon();
 
-    Daemon &operator=(const Daemon &other);
+  Daemon &operator=(const Daemon &other);
 
-    int start(const char *daemon_user);
+  int start(const char *daemon_user);
+
 private:
-    int daemon();
-    int create_lockfile(uid_t uid, gid_t gid);
+  int daemon();
+  int create_lockfile(uid_t uid, gid_t gid);
 
-    int _fd;
+  int _fd;
 };
 
-
-#endif //DAEMON_HPP
+#endif // DAEMON_HPP

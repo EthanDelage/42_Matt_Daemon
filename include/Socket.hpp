@@ -12,10 +12,10 @@ class Socket {
 public:
   Socket();
   Socket(int fd);
-  Socket(const Socket & other);
+  Socket(const Socket &other);
   ~Socket();
 
-  Socket & operator=(const Socket & other);
+  Socket &operator=(const Socket &other);
 
   ssize_t read(char *buffer, size_t size) const;
   ssize_t write(const std::string &buffer) const;

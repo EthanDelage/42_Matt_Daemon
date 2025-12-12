@@ -1,6 +1,7 @@
 #include "TintinReporter.hpp"
 
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <sys/fcntl.h>
@@ -24,19 +25,19 @@ std::unique_ptr<TintinReporter> TintinReporter::_instance;
 std::once_flag TintinReporter::_init_flag;
 
 TintinReporter::TintinReporter(const std::string &log_file_path) {
-  _socket.set_fd(open(log_file_path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644));
+  _socket.set_fd(
+      open(log_file_path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644));
   if (_socket.get_fd() == -1) {
     throw std::runtime_error("Logger(): Failed to open log file");
   }
 }
 
-TintinReporter::~TintinReporter() {
-  info("Log file closed");
-}
+TintinReporter::~TintinReporter() { info("Log file closed"); }
 
 void TintinReporter::init(const std::string &log_file_path) {
   std::call_once(_init_flag, [&]() {
-    _instance = std::unique_ptr<TintinReporter>(new TintinReporter(log_file_path));
+    _instance =
+        std::unique_ptr<TintinReporter>(new TintinReporter(log_file_path));
   });
   get_instance().info("Log file `" + log_file_path + "` created");
 }
@@ -70,15 +71,30 @@ void TintinReporter::log(Level level, const std::string &message) const {
   if (_socket.write(log_line_ss.str()) == -1) {
     throw std::runtime_error("Logger::log(): Failed to write to file");
   }
+  if (level == Level::Error) {
+    std::cerr << log_level_to_color(level) << log_line_ss.str() << COLOR_RESET
+              << std::flush;
+  } else {
+    std::cout << log_level_to_color(level) << log_line_ss.str() << COLOR_RESET
+              << std::flush;
+  }
 }
 
-void TintinReporter::debug(const std::string &message) const { log(Level::Debug, message); }
+void TintinReporter::debug(const std::string &message) const {
+  log(Level::Debug, message);
+}
 
-void TintinReporter::info(const std::string &message) const { log(Level::Info, message); }
+void TintinReporter::info(const std::string &message) const {
+  log(Level::Info, message);
+}
 
-void TintinReporter::warn(const std::string &message) const { log(Level::Warning, message); }
+void TintinReporter::warn(const std::string &message) const {
+  log(Level::Warning, message);
+}
 
-void TintinReporter::error(const std::string &message) const { log(Level::Error, message); }
+void TintinReporter::error(const std::string &message) const {
+  log(Level::Error, message);
+}
 
 std::string TintinReporter::log_level_to_color(Level level) {
   switch (level) {

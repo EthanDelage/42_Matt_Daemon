@@ -3,15 +3,14 @@
 #include "TintinReporter.hpp"
 
 #include <fcntl.h>
+#include <iostream>
 #include <pwd.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-Daemon::Daemon(): _fd(-1) {};
+Daemon::Daemon() : _fd(-1) {};
 
-Daemon::Daemon(const Daemon &other) {
-  *this = other;
-}
+Daemon::Daemon(const Daemon &other) { *this = other; }
 
 Daemon::~Daemon() {
   close(_fd);
@@ -59,12 +58,12 @@ int Daemon::start(const char *daemon_user) {
 
   if (setgid(gid) < 0) {
     TintinReporter::get_instance().error(std::string("start: setgid: ") +
-                                 strerror(errno));
+                                         strerror(errno));
     return -1;
   }
   if (setuid(uid) < 0) {
     TintinReporter::get_instance().error(std::string("start: setgid: ") +
-                                 strerror(errno));
+                                         strerror(errno));
     return -1;
   }
 
@@ -74,18 +73,20 @@ int Daemon::start(const char *daemon_user) {
 int Daemon::daemon() {
   pid_t pid = fork();
   if (pid < 0) {
-    TintinReporter::get_instance().error(std::string("Taskmaster::daemon: fork(): ") +
-                                 strerror(errno));
+    TintinReporter::get_instance().error(
+        std::string("Taskmaster::daemon: fork(): ") + strerror(errno));
     return -1;
   }
   if (pid > 0) {
+    std::cout << "daemon: daemon started (pid=" << std::to_string(pid) << ")"
+              << std::endl;
     TintinReporter::get_instance().info("daemon: exiting parent process");
     exit(0);
   }
 
   if (setsid() < 0) {
     TintinReporter::get_instance().error(std::string("daemon: setsid(): ") +
-                                 strerror(errno));
+                                         strerror(errno));
     return -1;
   }
 
@@ -113,31 +114,32 @@ int Daemon::daemon() {
 int Daemon::create_lockfile(uid_t uid, gid_t gid) {
   int fd = open(DAEMON_LOCKFILE, O_RDWR | O_CREAT, 0644);
   if (fd < 0) {
-    TintinReporter::get_instance().error(std::string("create_lockfile: open: ") +
-                                 strerror(errno));
+    TintinReporter::get_instance().error(
+        std::string("create_lockfile: open: ") + strerror(errno));
     return -1;
   }
 
   if (flock(fd, LOCK_EX | LOCK_NB) < 0) {
     if (errno == EWOULDBLOCK)
-      TintinReporter::get_instance().error("create_lockfile: Daemon already running !");
+      TintinReporter::get_instance().error(
+          "create_lockfile: Daemon already running !");
     else
-      TintinReporter::get_instance().error(std::string("create_lockfile: flock: ") +
-                                   strerror(errno));
+      TintinReporter::get_instance().error(
+          std::string("create_lockfile: flock: ") + strerror(errno));
     close(fd);
     return -1;
   }
 
   if (ftruncate(fd, 0) < 0) {
-    TintinReporter::get_instance().error(std::string("create_lockfile: ftruncate: ") +
-                                 strerror(errno));
+    TintinReporter::get_instance().error(
+        std::string("create_lockfile: ftruncate: ") + strerror(errno));
     close(fd);
     return -1;
   }
 
   if (fchown(fd, uid, gid) < 0) {
-    TintinReporter::get_instance().error(std::string("create_lockfile: fchown: ") +
-                                 strerror(errno));
+    TintinReporter::get_instance().error(
+        std::string("create_lockfile: fchown: ") + strerror(errno));
     close(fd);
     return -1;
   }

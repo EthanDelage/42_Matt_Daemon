@@ -1,10 +1,10 @@
 #include "SocketServer.hpp"
 
+#include <arpa/inet.h>
 #include <stdexcept>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 
 SocketServer::SocketServer() {
   _fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -26,14 +26,13 @@ SocketServer::SocketServer() {
   }
 }
 
-SocketServer::SocketServer(const SocketServer & other) : Socket(other._fd) {
+SocketServer::SocketServer(const SocketServer &other) : Socket(other._fd) {
   _addr = other._addr;
 }
 
-SocketServer::~SocketServer() {
-}
+SocketServer::~SocketServer() {}
 
-SocketServer & SocketServer::operator=(const SocketServer & other) {
+SocketServer &SocketServer::operator=(const SocketServer &other) {
   if (this == &other) {
     return *this;
   }

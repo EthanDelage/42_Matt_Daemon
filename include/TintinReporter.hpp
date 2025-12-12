@@ -7,6 +7,7 @@
 #include "Socket.hpp"
 
 #define LOGFILE_PATH "/var/log/matt_daemon/matt_daemon.log"
+// #define LOGFILE_PATH "./matt_daemon.log"
 
 class TintinReporter {
 public:
@@ -28,7 +29,7 @@ public:
 private:
   explicit TintinReporter(const std::string &log_file_path);
 
-  static std::string log_level_to_color(Level level) ;
+  static std::string log_level_to_color(Level level);
 
   static std::once_flag _init_flag;
   static std::unique_ptr<TintinReporter> _instance;

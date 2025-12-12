@@ -1,9 +1,8 @@
 add_executable(MattDaemon
-        main.c
+        main.cpp
         Daemon.cpp
         Socket.cpp
         SocketServer.cpp
-        SocketClient.cpp
         TintinReporter.cpp
         MattDaemon.cpp
 )
