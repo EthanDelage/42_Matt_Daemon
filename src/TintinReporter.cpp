@@ -1,5 +1,6 @@
 #include "TintinReporter.hpp"
 
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -28,7 +29,7 @@ TintinReporter::TintinReporter(const std::string &log_file_path) {
   _socket.set_fd(
       open(log_file_path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644));
   if (_socket.get_fd() == -1) {
-    throw std::runtime_error("Logger(): Failed to open log file");
+    throw std::runtime_error(std::string("Logger(): ") + strerror(errno));
   }
 }
 
@@ -68,15 +69,15 @@ void TintinReporter::log(Level level, const std::string &message) const {
     log_line_ss << std::endl;
   }
 
-  if (_socket.write(log_line_ss.str()) == -1) {
-    throw std::runtime_error("Logger::log(): Failed to write to file");
-  }
   if (level == Level::Error) {
     std::cerr << log_level_to_color(level) << log_line_ss.str() << COLOR_RESET
               << std::flush;
   } else {
     std::cout << log_level_to_color(level) << log_line_ss.str() << COLOR_RESET
               << std::flush;
+  }
+  if (_socket.write(log_line_ss.str()) == -1) {
+    throw std::runtime_error("Logger::log(): Failed to write to file");
   }
 }
 

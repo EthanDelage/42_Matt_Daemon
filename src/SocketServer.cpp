@@ -1,19 +1,19 @@
 #include "SocketServer.hpp"
 
 #include <arpa/inet.h>
+#include <cstring>
 #include <stdexcept>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "TintinReporter.hpp"
+
 SocketServer::SocketServer() {
+  TintinReporter::get_instance().info("Creating server");
   _fd = socket(AF_INET, SOCK_STREAM, 0);
   if (_fd < 0) {
     throw std::runtime_error(std::string("socket: ") + strerror(errno));
-  }
-  int opt = 1;
-  if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-    throw std::runtime_error(std::string("setsockopt: ") + strerror(errno));
   }
   _addr.sin_family = AF_INET;
   _addr.sin_port = htons(SERVER_PORT);
@@ -24,6 +24,7 @@ SocketServer::SocketServer() {
   if (listen(_fd, SERVER_BACKLOG) < 0) {
     throw std::runtime_error(std::string("listen: ") + strerror(errno));
   }
+  TintinReporter::get_instance().info("Server Created");
 }
 
 SocketServer::SocketServer(const SocketServer &other) : Socket(other._fd) {

@@ -1,6 +1,6 @@
 #include "MattDaemon.hpp"
 
-#include <signal.h>
+#include <csignal>
 #include <unistd.h>
 
 #include "TintinReporter.hpp"
@@ -9,7 +9,10 @@ volatile sig_atomic_t running = 1;
 
 static void signal_handler(int sig);
 
-MattDaemon::MattDaemon() { add_poll_fd({_server.get_fd(), POLLIN, 0}); };
+MattDaemon::MattDaemon() {
+  add_poll_fd({_server.get_fd(), POLLIN, 0});
+  TintinReporter::get_instance().info("Starting MattDaemon...");
+};
 
 MattDaemon::MattDaemon(const MattDaemon &other) { *this = other; }
 
@@ -86,6 +89,8 @@ void MattDaemon::handle_client_connection(pollfd pollfd) {
     throw std::invalid_argument(std::string("accept: ") + strerror(errno));
   }
   if (_poll_fds.size() >= MAX_CLIENT + 1) {
+    TintinReporter::get_instance().warn("Too many clients, closing fd=" +
+                                        std::to_string(client_fd));
     close(client_fd);
   }
   add_poll_fd({client_fd, POLLIN, 0});
@@ -136,6 +141,7 @@ void MattDaemon::set_sighandler() {
                                   std::to_string(sig));
     }
   }
+  TintinReporter::get_instance().info("Signal handler setup");
 }
 
 static void signal_handler(int sig) {

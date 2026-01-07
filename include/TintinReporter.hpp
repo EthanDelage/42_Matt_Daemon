@@ -1,6 +1,7 @@
 #ifndef TINTIN_REPORTER_HPP
 #define TINTIN_REPORTER_HPP
 
+#include <memory>
 #include <mutex>
 #include <string>
 

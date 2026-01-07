@@ -8,15 +8,22 @@
 int main() {
   try {
     TintinReporter::init(LOGFILE_PATH);
-    MattDaemon matt_daemon;
-    Daemon daemon;
-    if (daemon.start(DAEMON_USER) == -1) {
-      return EXIT_FAILURE;
-    }
-    matt_daemon.loop();
   } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   }
+  try {
+    Daemon daemon;
+    if (daemon.start(DAEMON_USER) == -1) {
+      return EXIT_FAILURE;
+    }
+    MattDaemon matt_daemon;
+    matt_daemon.loop();
+  } catch (std::exception &e) {
+    TintinReporter::get_instance().error(e.what());
+    TintinReporter::get_instance().info("Exiting MattDaemon unexpectedly");
+    return EXIT_FAILURE;
+  }
+  TintinReporter::get_instance().info("Exiting MattDaemon");
   return EXIT_SUCCESS;
 }

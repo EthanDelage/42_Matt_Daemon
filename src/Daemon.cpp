@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <pwd.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -13,8 +14,11 @@ Daemon::Daemon() : _fd(-1) {};
 Daemon::Daemon(const Daemon &other) { *this = other; }
 
 Daemon::~Daemon() {
-  close(_fd);
-  unlink(DAEMON_LOCKFILE);
+  TintinReporter::get_instance().info("~Daemon()");
+  if (_fd != -1) {
+    close(_fd);
+    unlink(DAEMON_LOCKFILE);
+  }
 }
 
 Daemon &Daemon::operator=(const Daemon &other) {
@@ -47,10 +51,17 @@ int Daemon::start(const char *daemon_user) {
   if (pidfd < 0) {
     return -1;
   }
+  close(pidfd);
+  unlink(DAEMON_LOCKFILE);
 
   if (daemon() < 0) {
     TintinReporter::get_instance().error(
         std::string("start: failed to daemon: ") + strerror(errno));
+    return -1;
+  }
+
+  pidfd = create_lockfile(uid, gid);
+  if (pidfd < 0) {
     return -1;
   }
 
@@ -78,8 +89,8 @@ int Daemon::daemon() {
     return -1;
   }
   if (pid > 0) {
-    std::cout << "daemon: daemon started (pid=" << std::to_string(pid) << ")"
-              << std::endl;
+    TintinReporter::get_instance().info(
+        "daemon: daemon started (pid=" + std::to_string(pid) + ")");
     TintinReporter::get_instance().info("daemon: exiting parent process");
     exit(0);
   }
