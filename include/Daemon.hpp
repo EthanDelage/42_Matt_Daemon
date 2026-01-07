@@ -18,7 +18,7 @@ public:
 
 private:
   int daemon();
-  int create_lockfile(uid_t uid, gid_t gid);
+  int create_lockfile();
 
   int _fd;
 };
