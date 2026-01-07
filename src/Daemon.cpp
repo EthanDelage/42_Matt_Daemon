@@ -48,11 +48,11 @@ int Daemon::start(const char *daemon_user) {
   uid = pw->pw_uid;
   gid = pw->pw_gid;
 
-  int pidfd = create_lockfile(uid, gid);
-  if (pidfd < 0) {
+  int pid_file = create_lockfile(uid, gid);
+  if (pid_file< 0) {
     return -1;
   }
-  close(pidfd);
+  close(pid_file);
   unlink(DAEMON_LOCKFILE);
 
   if (daemon() < 0) {
@@ -61,12 +61,12 @@ int Daemon::start(const char *daemon_user) {
     return -1;
   }
 
-  pidfd = create_lockfile(uid, gid);
-  if (pidfd < 0) {
+  _fd = create_lockfile(uid, gid);
+  if (_fd < 0) {
     return -1;
   }
 
-  dprintf(pidfd, "%d\n", getpid());
+  dprintf(_fd, "%d\n", getpid());
 
   if (setgid(gid) < 0) {
     TintinReporter::get_instance().error(std::string("start: setgid: ") +
@@ -79,7 +79,7 @@ int Daemon::start(const char *daemon_user) {
     return -1;
   }
 
-  return pidfd;
+  return _fd;
 }
 
 int Daemon::daemon() {
