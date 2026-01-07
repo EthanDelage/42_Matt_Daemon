@@ -15,6 +15,10 @@ SocketServer::SocketServer() {
   if (_fd < 0) {
     throw std::runtime_error(std::string("socket: ") + strerror(errno));
   }
+  int opt = 1;
+  if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+    throw std::runtime_error(std::string("setsockopt: ") + strerror(errno));
+  }
   _addr.sin_family = AF_INET;
   _addr.sin_port = htons(SERVER_PORT);
   _addr.sin_addr.s_addr = inet_addr(SERVER_ADDRESS);
