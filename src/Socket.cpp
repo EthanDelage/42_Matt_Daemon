@@ -3,6 +3,8 @@
 #include <iostream>
 #include <unistd.h>
 
+#include "TintinReporter.hpp"
+
 Socket::Socket() : _fd(-1) {}
 
 Socket::Socket(const int fd) : _fd(fd) {}
@@ -11,6 +13,7 @@ Socket::Socket(const Socket &other) : _fd(other._fd) {}
 
 Socket::~Socket() {
   if (_fd != -1) {
+    TintinReporter::get_instance().info("closing socket fd=" + std::to_string(_fd));
     close(_fd);
   }
   _fd = -1;
