@@ -1,6 +1,9 @@
 #include "MattDaemon.hpp"
 
+#include <algorithm>
 #include <csignal>
+#include <stdexcept>
+#include <string.h>
 #include <unistd.h>
 
 #include "TintinReporter.hpp"

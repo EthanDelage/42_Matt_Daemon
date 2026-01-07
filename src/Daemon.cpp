@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <pwd.h>
+#include <string.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>

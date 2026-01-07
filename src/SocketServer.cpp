@@ -1,8 +1,8 @@
 #include "SocketServer.hpp"
 
 #include <arpa/inet.h>
-#include <cstring>
 #include <stdexcept>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
