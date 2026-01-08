@@ -18,7 +18,7 @@ public:
   TintinReporter &operator=(const TintinReporter &) = delete;
   ~TintinReporter();
 
-  static void init(const std::string &log_file_path);
+  static void init(const std::string &log_file_path_str);
   static TintinReporter &get_instance();
 
   void log(Level level, const std::string &message) const;
@@ -28,9 +28,10 @@ public:
   void error(const std::string &message) const;
 
 private:
-  explicit TintinReporter(const std::string &log_file_path);
+  explicit TintinReporter(const std::string &log_file_path_str);
 
   static std::string log_level_to_color(Level level);
+  static void create_log_directories(const std::string &log_file_path_str);
 
   static std::once_flag _init_flag;
   static std::unique_ptr<TintinReporter> _instance;

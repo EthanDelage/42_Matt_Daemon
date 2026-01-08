@@ -1,6 +1,7 @@
 #include "TintinReporter.hpp"
 
 #include <cstring>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -25,8 +26,10 @@
 std::unique_ptr<TintinReporter> TintinReporter::_instance;
 std::once_flag TintinReporter::_init_flag;
 
-TintinReporter::TintinReporter(const std::string &log_file_path) {
-  _log_fd = open(log_file_path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644);
+TintinReporter::TintinReporter(const std::string &log_file_path_str) {
+  create_log_directories(log_file_path_str);
+  _log_fd =
+      open(log_file_path_str.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644);
   if (_log_fd == -1) {
     throw std::runtime_error(std::string("Logger(): ") + strerror(errno));
   }
@@ -37,12 +40,12 @@ TintinReporter::~TintinReporter() {
   close(_log_fd);
 }
 
-void TintinReporter::init(const std::string &log_file_path) {
+void TintinReporter::init(const std::string &log_file_path_str) {
   std::call_once(_init_flag, [&]() {
     _instance =
-        std::unique_ptr<TintinReporter>(new TintinReporter(log_file_path));
+        std::unique_ptr<TintinReporter>(new TintinReporter(log_file_path_str));
   });
-  get_instance().info("Log file `" + log_file_path + "` created");
+  get_instance().info("Log file `" + log_file_path_str + "` created");
 }
 
 TintinReporter &TintinReporter::get_instance() {
@@ -111,6 +114,23 @@ std::string TintinReporter::log_level_to_color(Level level) {
     return ERROR_COLOR;
   default:
     return "";
+  }
+}
+
+void TintinReporter::create_log_directories(
+    const std::string &log_file_path_str) {
+  std::filesystem::path log_file_path(log_file_path_str);
+
+  try {
+    std::filesystem::create_directories(log_file_path.parent_path());
+  } catch (const std::filesystem::filesystem_error &e) {
+    throw std::runtime_error(
+        std::string(
+            "TintinReporter::create_log_directories(): Filesystem error: ") +
+        e.what());
+  } catch (const std::exception &e) {
+    throw std::runtime_error(
+        std::string("TintinReporter::create_log_directories(): ") + e.what());
   }
 }
 
