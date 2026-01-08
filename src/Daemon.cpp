@@ -130,8 +130,13 @@ int Daemon::daemon() {
 int Daemon::create_lockfile(uid_t uid, gid_t gid) {
   int fd = open(DAEMON_LOCKFILE, O_RDWR | O_CREAT, 0644);
   if (fd < 0) {
-    TintinReporter::get_instance().error(
-        std::string("create_lockfile: open: ") + strerror(errno));
+    if (errno == EPERM) {
+      TintinReporter::get_instance().error(
+          "create_lockfile: Daemon already running !");
+    } else {
+      TintinReporter::get_instance().error(
+          std::string("create_lockfile: open: ") + strerror(errno));
+    }
     return -1;
   }
 
