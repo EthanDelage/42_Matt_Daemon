@@ -102,6 +102,12 @@ int Daemon::daemon() {
 
   umask(0);
 
+  if (chdir("/") == -1) {
+    TintinReporter::get_instance().error(std::string("daemon: chdir(): ") +
+                                         strerror(errno));
+    return -1;
+  }
+
   close(STDIN_FILENO);
   close(STDOUT_FILENO);
   close(STDERR_FILENO);
