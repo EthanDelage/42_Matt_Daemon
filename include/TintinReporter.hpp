@@ -34,7 +34,7 @@ private:
 
   static std::once_flag _init_flag;
   static std::unique_ptr<TintinReporter> _instance;
-  Socket _socket;
+  int _log_fd;
 };
 
 std::ostream &operator<<(std::ostream &os, const TintinReporter::Level &level);

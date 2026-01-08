@@ -13,7 +13,8 @@ Socket::Socket(const Socket &other) : _fd(other._fd) {}
 
 Socket::~Socket() {
   if (_fd != -1) {
-    TintinReporter::get_instance().info("closing socket fd=" + std::to_string(_fd));
+    TintinReporter::get_instance().info("closing socket fd=" +
+                                        std::to_string(_fd));
     close(_fd);
   }
   _fd = -1;

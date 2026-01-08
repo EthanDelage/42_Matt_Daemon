@@ -26,14 +26,16 @@ std::unique_ptr<TintinReporter> TintinReporter::_instance;
 std::once_flag TintinReporter::_init_flag;
 
 TintinReporter::TintinReporter(const std::string &log_file_path) {
-  _socket.set_fd(
-      open(log_file_path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644));
-  if (_socket.get_fd() == -1) {
+  _log_fd = open(log_file_path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644);
+  if (_log_fd == -1) {
     throw std::runtime_error(std::string("Logger(): ") + strerror(errno));
   }
 }
 
-TintinReporter::~TintinReporter() { info("Log file closed"); }
+TintinReporter::~TintinReporter() {
+  info("Log file closed");
+  close(_log_fd);
+}
 
 void TintinReporter::init(const std::string &log_file_path) {
   std::call_once(_init_flag, [&]() {
@@ -76,7 +78,7 @@ void TintinReporter::log(Level level, const std::string &message) const {
     std::cout << log_level_to_color(level) << log_line_ss.str() << COLOR_RESET
               << std::flush;
   }
-  if (_socket.write(log_line_ss.str()) == -1) {
+  if (Socket::write(_log_fd, log_line_ss.str()) == -1) {
     throw std::runtime_error("Logger::log(): Failed to write to file");
   }
 }
