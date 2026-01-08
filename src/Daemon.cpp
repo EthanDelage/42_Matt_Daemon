@@ -21,7 +21,8 @@ Daemon::~Daemon() {
     }
     close(_fd);
     if (remove(DAEMON_LOCKFILE) == -1) {
-      TintinReporter::get_instance().error(std::string("~Daemon(): remove: ") + strerror(errno));
+      TintinReporter::get_instance().error(std::string("~Daemon(): remove: ") +
+                                           strerror(errno));
     }
   }
 }
