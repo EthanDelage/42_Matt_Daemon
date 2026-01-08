@@ -1,11 +1,16 @@
 #include <iostream>
 #include <ostream>
+#include <unistd.h>
 
 #include "Daemon.hpp"
 #include "MattDaemon.hpp"
 #include "TintinReporter.hpp"
 
 int main() {
+  if (geteuid() != 0) {
+    std::cerr << "Daemon must start as root !" << std::endl;
+    return EXIT_FAILURE;
+  }
   try {
     TintinReporter::init(LOGFILE_PATH);
   } catch (std::exception &e) {
