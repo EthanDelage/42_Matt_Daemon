@@ -21,6 +21,7 @@ private:
   int create_lockfile();
 
   int _fd;
+  pid_t _pid;
 };
 
 #endif // DAEMON_HPP

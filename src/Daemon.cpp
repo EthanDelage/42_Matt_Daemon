@@ -10,15 +10,20 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-Daemon::Daemon() : _fd(-1) {};
+Daemon::Daemon() : _fd(-1), _pid(-1) {};
 
 Daemon::Daemon(const Daemon &other) { *this = other; }
 
 Daemon::~Daemon() {
   TintinReporter::get_instance().info("~Daemon()");
   if (_fd != -1) {
+    if (_pid == 0) { // child process
+      flock(_fd, LOCK_UN);
+    }
     close(_fd);
-    unlink(DAEMON_LOCKFILE);
+    if (remove(DAEMON_LOCKFILE) == -1) {
+      TintinReporter::get_instance().error(std::string("remove: ") + strerror(errno));
+    }
   }
 }
 
@@ -48,21 +53,14 @@ int Daemon::start(const char *daemon_user) {
   uid = pw->pw_uid;
   gid = pw->pw_gid;
 
-  int pid_file = create_lockfile();
-  if (pid_file < 0) {
+  _fd = create_lockfile();
+  if (_fd < 0) {
     return -1;
   }
-  close(pid_file);
-  unlink(DAEMON_LOCKFILE);
 
   if (daemon() < 0) {
     TintinReporter::get_instance().error(
         std::string("start: failed to daemon: ") + strerror(errno));
-    return -1;
-  }
-
-  _fd = create_lockfile();
-  if (_fd < 0) {
     return -1;
   }
 
@@ -83,15 +81,15 @@ int Daemon::start(const char *daemon_user) {
 }
 
 int Daemon::daemon() {
-  pid_t pid = fork();
-  if (pid < 0) {
+  _pid = fork();
+  if (_pid < 0) {
     TintinReporter::get_instance().error(
         std::string("Taskmaster::daemon: fork(): ") + strerror(errno));
     return -1;
   }
-  if (pid > 0) {
+  if (_pid > 0) {
     TintinReporter::get_instance().info(
-        "daemon: daemon started (pid=" + std::to_string(pid) + ")");
+        "daemon: daemon started (pid=" + std::to_string(_pid) + ")");
     TintinReporter::get_instance().info("daemon: exiting parent process");
     exit(0);
   }
@@ -139,13 +137,16 @@ int Daemon::create_lockfile() {
       TintinReporter::get_instance().error(
           std::string("create_lockfile: flock: ") + strerror(errno));
     close(fd);
+    remove(DAEMON_LOCKFILE);
     return -1;
   }
 
   if (ftruncate(fd, 0) < 0) {
     TintinReporter::get_instance().error(
         std::string("create_lockfile: ftruncate: ") + strerror(errno));
+    flock(fd, LOCK_UN);
     close(fd);
+    remove(DAEMON_LOCKFILE);
     return -1;
   }
 
