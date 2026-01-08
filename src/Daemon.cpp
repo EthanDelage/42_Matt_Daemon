@@ -53,7 +53,7 @@ int Daemon::start(const char *daemon_user) {
   uid = pw->pw_uid;
   gid = pw->pw_gid;
 
-  _fd = create_lockfile();
+  _fd = create_lockfile(uid, gid);
   if (_fd < 0) {
     return -1;
   }
@@ -121,7 +121,7 @@ int Daemon::daemon() {
   return 0;
 }
 
-int Daemon::create_lockfile() {
+int Daemon::create_lockfile(uid_t uid, gid_t gid) {
   int fd = open(DAEMON_LOCKFILE, O_RDWR | O_CREAT, 0644);
   if (fd < 0) {
     TintinReporter::get_instance().error(
@@ -147,6 +147,13 @@ int Daemon::create_lockfile() {
     flock(fd, LOCK_UN);
     close(fd);
     remove(DAEMON_LOCKFILE);
+    return -1;
+  }
+
+  if (fchown(fd, uid, gid) < 0) {
+    TintinReporter::get_instance().error(
+        std::string("create_lockfile: fchown: ") + strerror(errno));
+    close(fd);
     return -1;
   }
 
