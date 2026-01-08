@@ -15,14 +15,13 @@ Daemon::Daemon() : _fd(-1), _pid(-1) {};
 Daemon::Daemon(const Daemon &other) { *this = other; }
 
 Daemon::~Daemon() {
-  TintinReporter::get_instance().info("~Daemon()");
   if (_fd != -1) {
     if (_pid == 0) { // child process
       flock(_fd, LOCK_UN);
     }
     close(_fd);
     if (remove(DAEMON_LOCKFILE) == -1) {
-      TintinReporter::get_instance().error(std::string("remove: ") + strerror(errno));
+      TintinReporter::get_instance().error(std::string("~Daemon(): remove: ") + strerror(errno));
     }
   }
 }
